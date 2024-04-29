@@ -9,7 +9,7 @@ import * as Icons from '@ant-design/icons-vue'
 import moment from "moment";
 import "moment/locale/zh-cn";
 import '@/api'
-import '@/styles/common.scss'
+//import '@/styles/common.scss'
 
 
 

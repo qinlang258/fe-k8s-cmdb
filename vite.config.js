@@ -6,7 +6,6 @@ import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 // 导入对应包
 import ElementPlus from 'unplugin-element-plus/vite'
-import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers'
 export default defineConfig({
   plugins: [
     vue(),
@@ -14,19 +13,12 @@ export default defineConfig({
       resolvers: [ElementPlusResolver()],
     }),
     Components({
-      resolvers: [ElementPlusResolver({ importStyle: "saas" })],
+      resolvers: [ElementPlusResolver()],
     }),
     // 按需定制主题配置
     ElementPlus({
       useSource: true,
     }),
-    Components({
-      resolvers: [
-        AntDesignVueResolver({
-        importStyle: false
-      }),
-      ],
-        }),    
   ],
   resolve: {
     alias: {
@@ -36,12 +28,11 @@ export default defineConfig({
   css: {
     preprocessorOptions: {
       scss: {
-        // 自动导入scss文件
+        // 自动导入定制化样式文件进行样式覆盖
         additionalData: `
           @use "@/styles/element/index.scss" as *;
-          @use "@/styles/var.scss" as *;
         `,
       }
     }
-}
+  }
 })
