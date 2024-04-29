@@ -21,7 +21,21 @@ const router = createRouter({
           meta: {
             title: "Home"
           }
-        },                                         
+        },
+        {
+          path: "/k8s",
+          name: "K8s",
+          children: [
+            {
+              path: "node",
+              name: "k8s节点",
+              component: () => import("@/views/k8s/node/index.vue"),
+              meta: {
+                title: "Node"
+              }
+            }
+          ]
+        }                                                
       ]      
     }
   ]
