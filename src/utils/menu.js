@@ -15,8 +15,26 @@ const menuList = [
             path: "/k8s/node",
             name: "节点信息",
             key: "node"
-          }
+          },
+          {
+            path: "/k8s/deployment",
+            name: "应用信息",
+            key: "deployment"
+          }          
         ]     
-      }   
+      },
+      {
+        path: "/system",
+        name: "管理",
+        key: "System",
+        icon: "SettingTwoTone",
+        children: [
+          {
+            path: "/system/sysconfig",
+            name: "系统项配置",
+            key: "sysconfig",
+          },               
+        ]
+      }         
   ];
   export default menuList;

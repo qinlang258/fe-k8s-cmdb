@@ -33,9 +33,31 @@ const router = createRouter({
               meta: {
                 title: "Node"
               }
-            }
+            },
+            {
+              path: "deployment",
+              name: "Deployment应用",
+              component: () => import("@/views/k8s/deployment/index.vue"),
+              meta: {
+                title: "Deployment"
+              }
+            }            
           ]
-        }                                                
+        },
+        {
+          path: "/system",
+          name: "System",
+          children: [
+            {
+              path: "sysconfig",
+              name: "系统项",
+              component: () => import("@/views/system/sysconfig/index.vue"),
+              meta: {
+                roles: ["admin"]
+              }
+            }
+          ]}
+                                                                 
       ]      
     }
   ]

@@ -1,10 +1,4 @@
 <template>
-  <a-input
-    v-model:value="selectedK8sNamespace"
-    placeholder="k8s命名空间"
-    style="width: 180px"
-    @keypress.enter="fetchTableData"
-  ></a-input>
   <a-select
     v-model:value="selectedK8sCluster"
     placeholder="请选择K8S集群"
@@ -13,34 +7,44 @@
     @change="fetchTableData"
   ></a-select>
 
-  <a-table :columns="columns" :data-source="tableData">
+  <a-table
+    :columns="columns"
+    :data-source="tableData"
+    :row-key="(record) => record.Name"
+    :pagination="pagination"
+    @change="handleTableChange"
+  >
     <template #actions="{ record }">
-      <a-button @click="editAppDataAction(record)">编辑</a-button>
+      <a-button @click="detailDataAction(record)">查看详情</a-button>
     </template>
   </a-table>
+
+  <DetailComponent
+    v-if="detaildrawerVisible"
+    @close="detaildrawerVisible = false"
+  />
 </template>
 
 <script setup>
 import { ref, onMounted } from "vue";
-import { K8sNodeLis } from "@/api/k8s_node";
+import { K8sNodeLis, K8sNodeDescribe } from "@/api/k8s_node";
+import { SysconfigList } from "@/api/system";
 import { columns } from "./const/columns";
+import DetailComponent from "./components/detail.vue";
 
-const selectedAppName = ref();
-const selectedK8sNamespace = ref();
 const selectedK8sClusterOptions = ref([]);
 const selectedK8sCluster = ref();
 const tableData = ref([]);
-const editdrawerVisible = ref(false); // 控制抽屉 edit的显示和隐藏
-const editcurrentRecord = ref(null); // 当前 edit抽屉选中的记录
-const adddrawerVisible = ref(false); // 控制抽屉 add的显示和隐藏
+const detaildrawerVisible = ref(false); // 控制抽屉 edit的显示和隐藏
 
 // 获取K8S集群选项
 async function getK8sClusterOptions() {
   const res = await SysconfigList({ config_key: "k8s_cluster" });
+  console.log(res.value);
   if (res && res.Data && res.Data.Items) {
     selectedK8sClusterOptions.value = res.Data.Items.map((item) => ({
-      value: item.ConfigVal,
-      label: item.MarkVal,
+      value: item.configVal,
+      label: item.markVal,
     }));
   }
 }
@@ -60,51 +64,41 @@ function formatLabels(labels) {
 
 // 获取表格数据
 const getTableData = async () => {
-  let query = { k8s_cluster: selectedK8sCluster.value };
+  let query = {};
 
-  // 如果应用名和 k8s 命名空间都填写了值，则同时查询这两个条件
-  if (selectedAppName.value && selectedK8sNamespace.value) {
-    query = {
-      ...query,
-      service_name: selectedAppName.value,
-      namespace: selectedK8sNamespace.value,
-    };
-  } else {
-    // 如果应用名或 k8s 命名空间至少填写了一个值，则查询这个条件
-    if (selectedAppName.value) {
-      query = { ...query, service_name: selectedAppName.value };
-    }
-    if (selectedK8sNamespace.value) {
-      query = { ...query, namespace: selectedK8sNamespace.value };
-    }
+  if (selectedK8sCluster.value) {
+    query = { ...query, k8s_cluster: selectedK8sCluster.value };
   }
 
-  const res = await AppPage(query);
+  const res = await K8sNodeLis(query);
 
   const appPagedata = res.Data?.Items;
 
   // 重新设置 tableData ref，将后端返回的数据更新到表格数据中
   tableData.value = appPagedata.map((item) => ({
-    ServiceId: item.ServiceId,
-    GitlabId: item.GitlabId,
-    ServiceName: item.ServiceName,
-    Labels: formatLabels(item.Labels),
-    Envs: item.Envs,
-    Namespace: item.Namespace,
-    K8SCluster: item.K8SCluster,
+    Name: item.Name,
+    Status: item.Status,
+    CreationTimestamp: item.CreationTimestamp,
+    Version: item.Version,
+    Address: item.Address,
+    OsImage: item.OsImage,
+    KernelVersion: item.KernelVersion,
+    ContainerRuntime: item.ContainerRuntime,
   }));
 };
 
-// 编辑按钮点击事件
-function editAppDataAction(record) {
-  editcurrentRecord.value = record; // 设置当前选中的记录
-  editdrawerVisible.value = true; // 打开编辑组件
+// 添加按钮点击事件
+function detailDataAction(record) {
+  detaildrawerVisible.value = true; // 打开详细页面
 }
 
-// 添加按钮点击事件
-function addAppDataAction(record) {
-  adddrawerVisible.value = true; // 打开编辑组件
-}
+// 更新表格数据
+const handleTableChange = async (updatedPagination) => {
+  // 更新当前页码和每页条数
+  pagination.value = updatedPagination;
+
+  await fetchTableData();
+};
 
 onMounted(() => {
   getK8sClusterOptions();

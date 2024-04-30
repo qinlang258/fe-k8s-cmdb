@@ -12,3 +12,15 @@ export const K8sNodeLis = (data) => {
     }
   })
 }
+
+
+export const K8sNodeDescribe = (data) => {
+  return request({
+    url: '/api/k8s/node/describe',
+    method: 'POST',
+    data,
+    headers: {
+        Authorization: `${token}`
+    }
+  })
+}
