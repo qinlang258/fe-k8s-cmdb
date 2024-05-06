@@ -15,16 +15,23 @@
     @change="fetchTableData"
   ></a-select>
 
-  <!-- <a-table
+  <a-button type="primary" @click="resetSelection">重置</a-button>
+
+  <a-table
     :columns="columns"
     :data-source="tableData"
     :row-key="(record) => record.Name"
     @change="handleTableChange"
   >
     <template #actions="{ record }">
-      <a-button @click="detailDataAction(record)">查看详情</a-button>
+      <a-button @click="detailDeploymentAction(record)">查看详情</a-button>
     </template>
-  </a-table> -->
+  </a-table>
+
+  <DetailComponent
+    v-if="detaildrawerVisible"
+    @close="detaildrawerVisible = false"
+  />
 </template>
 
 <script setup>
@@ -32,15 +39,26 @@ import { ref, onMounted } from "vue";
 import { SysconfigList } from "@/api/system";
 import { K8sNamespaceList } from "@/api/k8s_namespace";
 import { columns } from "./const/columns";
+import { K8sDeploymentList } from "@/api/k8s_deployment";
+import DetailComponent from "./components/detail.vue";
 
 const selectedNamespaceOptions = ref([]);
 const selectedK8sClusterOptions = ref([]);
 const selectedK8sCluster = ref();
 const selectedNamespace = ref();
+const tableData = ref([]);
+const detaildrawerVisible = ref(false); // 控制抽屉 edit的显示和隐藏
 
 // 更新表格数据
 const fetchTableData = async () => {
   await getTableData();
+};
+
+const resetSelection = () => {
+  selectedK8sCluster.value = null;
+  selectedNamespace.value = null;
+  tableData.value = [];
+  //fetchTableData();
 };
 
 // 获取表格数据
@@ -59,22 +77,23 @@ const getTableData = async () => {
 
   getK8sNamespacesOptions();
 
-  //   const res = await K8sNamespaceLis(query);
+  const res = await K8sDeploymentList(query);
 
-  //   console.log(res.value);
+  console.log(res.value);
 
-  //const appPagedata = res.Data?.Items;
+  const appPagedata = res.Data?.Items;
 
-  // 重新设置 tableData ref，将后端返回的数据更新到表格数据中
-  //   tableData.value = appPagedata.map((item) => ({
-  //     ServiceId: item.ServiceId,
-  //     GitlabId: item.GitlabId,
-  //     ServiceName: item.ServiceName,
-  //     Labels: formatLabels(item.Labels),
-  //     Envs: item.Envs,
-  //     Namespace: item.Namespace,
-  //     K8SCluster: item.K8SCluster,
-  //   }));
+  if (res.Data.Items != null) {
+    tableData.value = appPagedata.map((item) => ({
+      Name: item.Name,
+      Namespace: item.Namespace,
+      Replicas: item.Replicas,
+      Image: item.Image,
+      CreationTimestamp: item.CreationTimestamp,
+    }));
+  } else {
+    tableData.value = [];
+  }
 };
 
 // 获取K8S集群选项
@@ -99,7 +118,9 @@ async function getK8sNamespacesOptions() {
   }
 }
 
-console.log(selectedK8sClusterOptions.value);
+function detailDeploymentAction(record) {
+  detaildrawerVisible.value = true; // 打开详细页面
+}
 
 onMounted(() => {
   getK8sClusterOptions();
