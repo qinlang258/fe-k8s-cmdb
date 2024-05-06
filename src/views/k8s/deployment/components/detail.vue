@@ -4,20 +4,15 @@
     :width="720"
     :body-style="{ paddingBottom: '80px' }"
     :footer-style="{ textAlign: 'right' }"
+    :closable="false"
   >
-    <h2>编辑应用数据</h2>
-    <a-form>
-      <a-form-item label="标签">
-        <div class="tag-container">
-          <div class="tag-row">
-            <div class="tag-key">标签键</div>
-            <div class="tag-value">标签值</div>
-          </div>
-          <div class="tag-row" v-for="(value, key) in tagData" :key="key">
-            <div class="tag-key">{{ key }}</div>
-            <div class="tag-value"></div>
-          </div>
-        </div>
+    <h2>详情应用信息</h2>
+    <a-form @finishFailed="handleClose">
+      <a-form-item label="服务名">
+        <a-input v-model:value="record.Name" disabled />
+      </a-form-item>
+      <a-form-item>
+        <a-button @click="handleClose">关闭</a-button>
       </a-form-item>
     </a-form>
   </a-drawer>
@@ -26,8 +21,9 @@
 <script setup>
 import { ref, defineProps, defineEmits, onMounted } from "vue";
 
-const open = ref(false); // Control drawer visibility
+const open = ref(false);
 const LabelsData = ref({});
+const emit = defineEmits(["close", "reloadtable"]);
 
 const props = defineProps({
   record: {
@@ -36,15 +32,12 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["close", "reloadtable"]);
+const formData = ref({ ...props.record });
+console.log(formData.value);
 
-// Update open prop when receiving data
 onMounted(() => {
   open.value = true;
 });
-
-const formData = ref({ ...props.record });
-console.log(props.record);
 
 // 转化json标签
 const parseLabels = () => {
@@ -96,4 +89,3 @@ const handleClose = () => {
   flex: 1;
 }
 </style>
-v

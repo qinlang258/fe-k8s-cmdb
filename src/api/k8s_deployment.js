@@ -12,3 +12,14 @@ export const K8sDeploymentList = (data) => {
     },
   });
 };
+
+export const K8sDeploymentGet = (data) => {
+  return request({
+    url: "/api/k8s/deployment/get",
+    method: "POST",
+    data,
+    headers: {
+      Authorization: `${token}`,
+    },
+  });
+};
