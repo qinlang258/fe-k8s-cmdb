@@ -50,7 +50,7 @@ const selectedK8sCluster = ref();
 const selectedNamespace = ref();
 const tableData = ref([]);
 const detaildrawerVisible = ref(false); // 控制抽屉 edit的显示和隐藏
-const showRecord = ref(null);
+const showRecord = ref([null]);
 
 // 获取 namespace
 const fetchNamespaceDataOptions = async () => {
@@ -89,6 +89,7 @@ const getTableData = async () => {
       Replicas: item.Replicas,
       Image: item.Image,
       CreationTimestamp: item.CreationTimestamp,
+      K8sCluster: selectedK8sCluster,
     }));
   } else {
     tableData.value = [];
@@ -119,22 +120,6 @@ async function getK8sNamespacesOptions() {
 const detailDeploymentAction = async (record) => {
   showRecord.value = record;
   detaildrawerVisible.value = true; // 打开详细页面
-
-  let query = {};
-
-  if (selectedK8sCluster.value || selectedNamespace.value) {
-    if (selectedK8sCluster.value) {
-      query = { ...query, k8s_cluster: selectedK8sCluster.value };
-    }
-
-    if (selectedNamespace.value) {
-      query = { ...query, namespace: selectedNamespace.value };
-    }
-  }
-
-  query = { ...query, name: record.Name };
-
-  const res = K8sDeploymentGet(query);
 };
 
 onMounted(() => {
