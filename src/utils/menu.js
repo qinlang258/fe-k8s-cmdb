@@ -26,6 +26,11 @@ const menuList = [
         name: "StatefulSets",
         key: "sts",
       },
+      {
+        path: "/k8s/svc",
+        name: "Service",
+        key: "svc",
+      },
     ],
   },
   {

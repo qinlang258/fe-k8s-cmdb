@@ -49,6 +49,14 @@ const router = createRouter({
                 title: "StatefulSets",
               },
             },
+            {
+              path: "svc",
+              name: "Service服务",
+              component: () => import("@/views/k8s/svc/index.vue"),
+              meta: {
+                title: "Service",
+              },
+            },
           ],
         },
         {
