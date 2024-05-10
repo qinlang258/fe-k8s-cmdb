@@ -24,23 +24,6 @@
         <a-input v-model:value="appData.ServiceAccount" />
       </a-form-item>
 
-      <a-form-item label="标签">
-        <div class="tag-container">
-          <div class="tag-row">
-            <div class="tag-key">标签键</div>
-            <div class="tag-value">标签值</div>
-          </div>
-          <template v-for="(value, key) in appData.Labels" :key="key">
-            <div class="label-item">
-              <div class="tag-row">
-                <div class="tag-key">{{ key }}</div>
-                <div class="tag-value">{{ value }}</div>
-              </div>
-            </div>
-          </template>
-        </div>
-      </a-form-item>
-
       <a-form-item label="容器" class="custom-form-item">
         <template v-for="(container, index) in appData.Containers" :key="index">
           <div class="container-item">
@@ -57,10 +40,18 @@
                 <span class="property-value">{{ container.Image }}</span>
               </div>
               <div class="container-property">
-                <span class="property-label">端口:</span>
-                <span class="property-value" v-if="container.Port.length > 0">
+                <span class="property-label">容器端口:</span>
+                <span
+                  class="property-value"
+                  v-if="
+                    container.ContainerPort &&
+                    container.ContainerPort.length > 0
+                  "
+                >
                   {{
-                    container.Port.map((port) => port.ContainerPort).join(", ")
+                    container.ContainerPort.map(
+                      (ContainerPort) => ContainerPort.ContainerPort
+                    ).join(", ")
                   }}
                 </span>
                 <span class="property-value" v-else>无</span>
@@ -79,6 +70,49 @@
             </div>
           </div>
         </template>
+      </a-form-item>
+
+      <!-- Inside the template -->
+      <a-form-item label="关联的SVC" class="custom-form-item">
+        <template v-for="(svc, index) in appData.Service" :key="index">
+          <div class="container-item">
+            <h3>Service {{ index + 1 }}</h3>
+            <div class="container-details">
+              <div class="container-property">
+                <span class="property-label">服务名:</span>
+                <span class="property-value">{{ svc.Name }}</span>
+              </div>
+              <div class="container-property">
+                <span class="property-label">Type:</span>
+                <span class="property-value">{{ svc.Type }}</span>
+              </div>
+              <div class="container-property">
+                <span class="property-label">端口:</span>
+                <span class="property-value" v-if="svc.Ports.length > 0">
+                  {{ svc.Ports.map((port) => port.Port).join(", ") }}
+                </span>
+                <span class="property-value" v-else>无</span>
+              </div>
+            </div>
+          </div>
+        </template>
+      </a-form-item>
+
+      <a-form-item label="标签">
+        <div class="tag-container">
+          <div class="tag-row">
+            <div class="tag-key">标签键</div>
+            <div class="tag-value">标签值</div>
+          </div>
+          <template v-for="(value, key) in appData.Labels" :key="key">
+            <div class="label-item">
+              <div class="tag-row">
+                <div class="tag-key">{{ key }}</div>
+                <div class="tag-value">{{ value }}</div>
+              </div>
+            </div>
+          </template>
+        </div>
       </a-form-item>
 
       <a-form-item>
