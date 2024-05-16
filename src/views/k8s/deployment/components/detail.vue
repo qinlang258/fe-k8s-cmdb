@@ -9,19 +9,22 @@
     <h2>详情应用信息</h2>
     <a-form @finishFailed="handleClose">
       <a-form-item label="服务名">
-        <a-input v-model:value="appData.Name" />
+        <a-input v-model:value="appData.Name" disabled />
+      </a-form-item>
+      <a-form-item label="副本数量">
+        <a-input v-model:value="replicas" />
       </a-form-item>
       <a-form-item label="重启策略">
-        <a-input v-model:value="appData.RestartPolicy" />
+        <a-input v-model:value="appData.RestartPolicy" disabled />
       </a-form-item>
       <a-form-item label="节点选择">
         <a-input v-model:value="appData.NodeSelector" />
       </a-form-item>
       <a-form-item label="调度器">
-        <a-input v-model:value="appData.SchedulerName" />
+        <a-input v-model:value="appData.SchedulerName" disabled />
       </a-form-item>
       <a-form-item label="ServiceAccount">
-        <a-input v-model:value="appData.ServiceAccount" />
+        <a-input v-model:value="appData.ServiceAccount" disabled />
       </a-form-item>
 
       <a-form-item label="容器" class="custom-form-item">
@@ -117,6 +120,13 @@
 
       <a-form-item>
         <a-button @click="handleClose">关闭</a-button>
+
+        <a-button @click="handleSubmit">
+          保存
+          <a-col v-if="successMessage" span="24">
+            <a-alert message="修改成功" type="success" show-icon />
+          </a-col>
+        </a-button>
       </a-form-item>
     </a-form>
   </a-drawer>
@@ -124,12 +134,17 @@
 
 <script setup>
 import { ref, defineProps, defineEmits, onMounted } from "vue";
-import { K8sDeploymentGet } from "@/api/k8s_deployment";
+import { K8sDeploymentGet, K8sDeploymentUpdate } from "@/api/k8s_deployment";
 
 const open = ref(false);
 const LabelsData = ref({});
 const emit = defineEmits(["close", "reloadtable"]);
 const appData = ref([]);
+const replicas = ref();
+const successMessage = ref(false); // 控制成功提示的显示状态
+const container1 = ref();
+const container2 = ref();
+const container3 = ref();
 
 const props = defineProps({
   record: {
@@ -139,26 +154,43 @@ const props = defineProps({
 });
 
 const formData = ref({ ...props.record });
+console.log(formData.value);
+replicas.value = formData.value.Replicas;
 
 const getTableData = async () => {
   let query = {};
 
-  if (formData.value.Namespace && formData.value.K8sCluster) {
-    if (formData.value.K8sCluster) {
-      query = { ...query, K8sCluster: formData.value.K8sCluster };
-    }
-
-    if (formData.value.Namespace) {
-      query = { ...query, Namespace: formData.value.Namespace };
-    }
+  if (
+    formData.value.Namespace &&
+    formData.value.K8sCluster &&
+    formData.value.Name
+  ) {
+    query = { ...query, K8sCluster: formData.value.K8sCluster };
+    query = { ...query, Namespace: formData.value.Namespace };
+    query = { ...query, Name: formData.value.Name };
   }
-
-  query = { ...query, Name: formData.value.Name };
 
   const res = await K8sDeploymentGet(query);
 
   appData.value = res.Data.Items[0];
 };
+
+async function UpdateApp() {
+  let query = {};
+
+  if (formData.value.Namespace && formData.value.K8sCluster) {
+    query = { ...query, K8sCluster: formData.value.K8sCluster };
+    query = { ...query, Namespace: formData.value.Namespace };
+    query = { ...query, Name: formData.value.Name };
+  }
+
+  // 只有当 选择了集群以及namespace才会去调用这个
+  if (replicas.value) {
+    query = { ...query, replicas: replicas.value };
+  }
+
+  K8sDeploymentUpdate(query);
+}
 
 getTableData();
 
@@ -181,8 +213,9 @@ const parseLabels = () => {
 const handleSubmit = (e) => {
   e.preventDefault();
 
-  console.log("保存数据：", formData.value); // 打印保存的数据
   // 更新主页面表单数据
+  UpdateApp();
+
   emit("reloadtable");
   emit("close");
 };

@@ -23,3 +23,14 @@ export const K8sDeploymentGet = (data) => {
     },
   });
 };
+
+export const K8sDeploymentUpdate = (data) => {
+  return request({
+    url: "/api/k8s/deployment/update",
+    method: "POST",
+    data,
+    headers: {
+      Authorization: `${token}`,
+    },
+  });
+};

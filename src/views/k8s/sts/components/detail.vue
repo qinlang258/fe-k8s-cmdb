@@ -9,7 +9,7 @@
     <h2>详情应用信息</h2>
     <a-form @finishFailed="handleClose">
       <a-form-item label="服务名">
-        <a-input v-model:value="appData.Name" />
+        <a-input v-model:value="appData.Name" disabled />
       </a-form-item>
       <a-form-item label="重启策略">
         <a-input v-model:value="appData.RestartPolicy" />
